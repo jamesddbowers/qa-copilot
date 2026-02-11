@@ -1,312 +1,183 @@
-# qa-copilot-vscode
+![QA Copilot — AI-Powered API Test Automation for GitHub Copilot](qa-copilot-banner.png)
 
-QA automation agents for API integration testing, ported from Claude Code to GitHub Copilot.
+[![VS Code 1.102+](https://img.shields.io/badge/VS%20Code-1.102%2B-007ACC?logo=visualstudiocode&logoColor=white)](https://code.visualstudio.com/)
+[![GitHub Copilot Required](https://img.shields.io/badge/GitHub%20Copilot-Required-000?logo=githubcopilot&logoColor=white)](https://github.com/features/copilot)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![6 Agents](https://img.shields.io/badge/agents-6-blue)](#agents--prompts)
 
-## Overview
+# qa-copilot
 
-This is the GitHub Copilot VS Code version of qa-copilot. It provides the same QA automation capabilities:
+**AI-powered QA automation agents for GitHub Copilot in VS Code.** Discover API endpoints, analyze auth patterns, generate Postman collections, build Azure DevOps pipelines, and diagnose test failures — all from Copilot Chat. 6 agents, 6 prompts, and 8 skills for end-to-end API integration test automation across Java, .NET, Node.js, and Python codebases.
 
-- Discover API endpoints in codebases
-- Analyze authentication patterns
-- Prioritize endpoints from traffic data
-- Generate Postman collections
-- Create Azure DevOps pipelines
-- Diagnose test failures
+## Why QA Copilot?
 
-## Quick Start (Testing)
+- **Codebase-Aware** — Agents read your actual source code to discover endpoints, no manual API cataloging
+- **Multi-Stack** — Supports Spring Boot, ASP.NET Core, Express, NestJS, FastAPI, Flask, Django REST
+- **Auth Intelligence** — Automatically maps OAuth, JWT, API Key, and Azure AD patterns for test automation
+- **Traffic-Driven Priority** — Integrates Dynatrace/APM data to focus testing on highest-traffic endpoints
+- **Pipeline-Ready** — Generates Newman-based Azure DevOps CI/CD pipelines with proper variable groups and secret management
+- **Human-in-the-Loop** — Every agent asks for confirmation before writing files; read-only by default
 
-**One-liner to pull QA Copilot into any project:**
+## Quick Start
+
+**1. Fork** this repo to your GitHub account: [Fork qa-copilot](https://github.com/jamesddbowers/qa-copilot/fork)
+
+**2. Pull** the `.github` folder into your project:
 
 ```bash
 # Replace YOUR_USERNAME with your GitHub username
-cd /path/to/your/project && npx degit github:YOUR_USERNAME/qa-copilot-vscode/.github .github
+cd /path/to/your/project
+npx degit github:YOUR_USERNAME/qa-copilot/.github .github
 ```
 
-> **Note:** If using the parent qa-agents repo instead, use:
-> `npx degit github:YOUR_USERNAME/qa-agents/qa-copilot-vscode/.github .github`
+> Downloads only the `.github/` folder — no git history, no full clone.
 
-Then enable VS Code settings (paste into settings.json):
+**3. Verify** — Open Copilot Chat, type `/` and you should see 6 QA prompts. Click the agent picker dropdown to see 6 custom agents.
 
-```json
-"github.copilot.chat.codeGeneration.useInstructionFiles": true,
-"chat.promptFiles": true,
-"chat.useAgentSkills": true,
-"chat.agent.enabled": true
-```
+> **Important:** The `.github/` folder must land at your **project root** with `agents/`, `prompts/`, and `skills/` directly inside it. This is the only structure GitHub Copilot recognizes.
 
-**Verify:** Open Copilot Chat, type `/` — you should see the QA prompts listed.
-
----
-
-## Installation & Setup
-
-### Step 1: Prerequisites
-
-Before installing, ensure you have:
-
-- [ ] VS Code **1.102+** (check: Help → About)
-- [ ] GitHub Copilot extension installed
-- [ ] Active GitHub Copilot subscription
-- [ ] Copilot Chat enabled
-
-### Step 2: Enable Required Settings
-
-Open VS Code Settings (JSON) and add these settings:
-
-```json
-{
-  "github.copilot.chat.codeGeneration.useInstructionFiles": true,
-  "chat.promptFiles": true,
-  "chat.useAgentSkills": true,
-  "chat.agent.enabled": true
-}
-```
-
-**How to access Settings JSON:**
-
-1. Press `Ctrl+Shift+P` (or `Cmd+Shift+P` on Mac)
-2. Type "Preferences: Open User Settings (JSON)"
-3. Add the settings above
-
-### Step 3: Pull Files from GitHub to Your Project
-
-Choose the method that works best for your setup:
-
-#### Method 1: npx degit (Recommended - No Clone Required)
+<details>
+<summary>Alternative: Git Sparse Checkout (no npm required)</summary>
 
 ```bash
-# From your target project directory
 cd /path/to/your/project
 
-# Pull just the .github folder from the standalone repo
-npx degit github:YOUR_USERNAME/qa-copilot-vscode/.github .github
-```
-
-**Why degit?** Downloads only the files you need without git history or full clone.
-
-#### Method 2: Git Sparse Checkout (No npm Required)
-
-```bash
-# From your target project directory
-cd /path/to/your/project
-
-# Clone only the .github folder (shallow, sparse)
 git clone --depth 1 --filter=blob:none --sparse \
-  https://github.com/YOUR_USERNAME/qa-copilot-vscode.git temp-qa-copilot
+  https://github.com/YOUR_USERNAME/qa-copilot.git temp-qa-copilot
 
 cd temp-qa-copilot
 git sparse-checkout set .github
 
-# Copy to your project and cleanup
 cp -r .github ../
 cd ..
 rm -rf temp-qa-copilot
 ```
 
-#### Method 3: GitHub CLI (If you have `gh` installed)
+</details>
 
-```bash
-# From your target project directory
-cd /path/to/your/project
+## How It Works
 
-# Clone and extract .github folder
-gh repo clone YOUR_USERNAME/qa-copilot-vscode -- --depth 1 --filter=blob:none --sparse
-cd qa-copilot-vscode
-git sparse-checkout set .github
-cp -r .github ../
-cd ..
-rm -rf qa-copilot-vscode
-```
+Work through the steps in order. Each builds on the previous. Step 3 is optional if you don't have Dynatrace/APM data.
 
-#### Method 4: Direct Download (Manual)
+| Step | What | Prompt | Agent |
+|------|------|--------|-------|
+| 1 | Discover endpoints | `/discover-endpoints` | `@endpoint-discoverer` |
+| 2 | Analyze auth | `/analyze-auth` | `@auth-analyzer` |
+| 3 | Prioritize from traffic *(optional)* | `/analyze-traffic` | `@traffic-analyzer` |
+| 4 | Generate Postman collection | `/generate-collection` | `@collection-generator` |
+| 5 | Generate ADO pipeline | `/generate-pipeline` | `@pipeline-generator` |
+| 6 | Diagnose failures | `/diagnose` | `@diagnostics-agent` |
 
-1. Go to `https://github.com/YOUR_USERNAME/qa-copilot-vscode`
-2. Navigate to `.github/`
-3. Click "Download ZIP" or download individual files
-4. Extract to your project's `.github/` folder
+## Agents & Prompts
 
-#### Method 5: curl Individual Files (For CI/CD)
+Type `@agent-name` or `/command` in Copilot Chat. Agents are conversational (multi-turn); prompts execute a specific task.
 
-```bash
-# From your target project directory
-cd /path/to/your/project
-mkdir -p .github/prompts .github/agents .github/skills
+| Capability | Agent | Prompt | Description |
+|------------|-------|--------|-------------|
+| Endpoint Discovery | `@endpoint-discoverer` | `/discover-endpoints` | Scans code for REST endpoints across Java, .NET, Node.js, Python |
+| Auth Analysis | `@auth-analyzer` | `/analyze-auth` | Maps OAuth, JWT, API Key, Azure AD patterns for test automation |
+| Traffic Analysis | `@traffic-analyzer` | `/analyze-traffic` | Prioritizes endpoints from Dynatrace/APM traffic data |
+| Collection Generation | `@collection-generator` | `/generate-collection` | Creates Postman/Newman collections with test scripts and tagging |
+| Pipeline Generation | `@pipeline-generator` | `/generate-pipeline` | Generates Azure DevOps CI/CD pipeline YAML for Newman |
+| Failure Diagnostics | `@diagnostics-agent` | `/diagnose` | Triages test failures with classification and remediation |
 
-# Base URL for raw files (standalone repo)
-BASE="https://raw.githubusercontent.com/YOUR_USERNAME/qa-copilot-vscode/main/.github"
+## Skills
 
-# Download custom instructions
-curl -o .github/copilot-instructions.md "$BASE/copilot-instructions.md"
+Skills are domain knowledge files that Copilot loads automatically when relevant — no manual invocation needed.
 
-# Download prompts
-for f in discover-endpoints analyze-auth analyze-traffic generate-collection generate-pipeline diagnose; do
-  curl -o ".github/prompts/$f.prompt.md" "$BASE/prompts/$f.prompt.md"
-done
+| Skill | Domain |
+|-------|--------|
+| `endpoint-discovery` | Java, .NET, Node.js, Python route patterns |
+| `auth-patterns` | OAuth, JWT, API Key, Azure AD automation |
+| `dynatrace-analysis` | DQL queries, export formats, prioritization |
+| `test-tagging` | Smoke, regression, critical, WIP conventions |
+| `postman-generation` | Collection schema, assertions, request chaining |
+| `test-data-planning` | Faker patterns, seeding, cleanup strategies |
+| `ado-pipeline-patterns` | Newman tasks, variable groups, reporting |
+| `failure-triage` | Classification matrix, remediation patterns |
 
-# Download agents
-for f in endpoint-discoverer auth-analyzer traffic-analyzer collection-generator pipeline-generator diagnostics-agent; do
-  curl -o ".github/agents/$f.agent.md" "$BASE/agents/$f.agent.md"
-done
-```
+## Folder Structure
 
-Your project should now have this structure:
+> **The `.github/` folder MUST be at your project root.** This is the only location GitHub Copilot recognizes for agents, prompts, and skills.
 
 ```text
 your-project/
-├── .github/
-│   ├── copilot-instructions.md    # Project-wide QA guidelines
-│   ├── prompts/
-│   │   ├── discover-endpoints.prompt.md
-│   │   ├── analyze-auth.prompt.md
-│   │   ├── analyze-traffic.prompt.md
-│   │   ├── generate-collection.prompt.md
-│   │   ├── generate-pipeline.prompt.md
-│   │   └── diagnose.prompt.md
-│   ├── agents/
-│   │   ├── endpoint-discoverer.agent.md
-│   │   ├── auth-analyzer.agent.md
-│   │   ├── traffic-analyzer.agent.md
-│   │   ├── collection-generator.agent.md
-│   │   ├── pipeline-generator.agent.md
-│   │   └── diagnostics-agent.agent.md
-│   └── skills/
-│       └── [skill-folders]/
-└── your-existing-files...
+└── .github/
+    ├── copilot-instructions.md
+    ├── agents/
+    │   ├── endpoint-discoverer.agent.md
+    │   ├── auth-analyzer.agent.md
+    │   ├── traffic-analyzer.agent.md
+    │   ├── collection-generator.agent.md
+    │   ├── pipeline-generator.agent.md
+    │   └── diagnostics-agent.agent.md
+    ├── prompts/
+    │   ├── discover-endpoints.prompt.md
+    │   ├── analyze-auth.prompt.md
+    │   ├── analyze-traffic.prompt.md
+    │   ├── generate-collection.prompt.md
+    │   ├── generate-pipeline.prompt.md
+    │   └── diagnose.prompt.md
+    └── skills/
+        ├── endpoint-discovery/
+        ├── auth-patterns/
+        ├── dynatrace-analysis/
+        ├── test-tagging/
+        ├── postman-generation/
+        ├── test-data-planning/
+        ├── ado-pipeline-patterns/
+        └── failure-triage/
 ```
-
-### Step 4: Open Project in VS Code
-
-Open the target project folder in VS Code. **No restart required** - VS Code auto-detects files in `.github/` folders.
-
-### Step 5: Verify Installation
-
-| Component | How to Verify | Expected Result |
-|-----------|---------------|-----------------|
-| **Prompts** | Type `/` in Copilot Chat | See `discover-endpoints`, `analyze-auth`, etc. |
-| **Agents** | Click agents dropdown in Chat | See `endpoint-discoverer`, `auth-analyzer`, etc. |
-| **Skills** | Ask "How do I find REST endpoints?" | Skill context loads automatically |
-| **Instructions** | Ask Copilot to write code | Should mention QA guidelines |
-
-**Quick Test:**
-1. Open Copilot Chat (`Ctrl+Alt+I` or `Cmd+Alt+I`)
-2. Type `/` - you should see your prompt names listed
-3. Click the agent picker dropdown - you should see custom agents
-
----
-
-## Troubleshooting
-
-### Prompts Not Appearing
-
-| Symptom | Solution |
-|---------|----------|
-| `/` shows no custom prompts | Enable `chat.promptFiles: true` in settings |
-| Prompts listed but won't run | Check `.prompt.md` files have valid YAML frontmatter |
-
-### Agents Not Appearing
-
-| Symptom | Solution |
-|---------|----------|
-| No custom agents in dropdown | Enable `chat.agent.enabled: true` in settings |
-| Agent picker missing entirely | Update VS Code to 1.102+ |
-| Org agents not showing | Enable `github.copilot.chat.customAgents.showOrganizationAndEnterpriseAgents: true` |
-
-### Skills Not Loading
-
-| Symptom | Solution |
-|---------|----------|
-| Skills never activate | Enable `chat.useAgentSkills: true` in settings |
-| Wrong skill loads | Check `description` field in SKILL.md frontmatter |
-
-### General Issues
-
-| Symptom | Solution |
-|---------|----------|
-| Nothing works | Verify `.github/` folder is at project root (not nested) |
-| Files not detected | Close and reopen the project folder |
-| Legacy `.chatmode.md` files | Use VS Code Quick Fix to convert to `.agent.md` |
-
----
-
-## Custom Instructions
-
-This project includes `.github/copilot-instructions.md` which provides project-wide QA guidelines:
-
-- Safe output locations
-- Security rules (never output secrets)
-- Human-in-the-loop requirements
-- Quality standards for output
-
-## Usage
-
-### Prompt Files (Commands)
-
-Invoke prompts in Copilot Chat using the `/` prefix:
-
-| Command | Description |
-|---------|-------------|
-| `/discover-endpoints` | Find API endpoints in code |
-| `/analyze-auth` | Analyze authentication patterns |
-| `/analyze-traffic` | Prioritize endpoints from traffic data |
-| `/generate-collection` | Create Postman collection |
-| `/generate-pipeline` | Create ADO pipeline |
-| `/diagnose` | Triage test failures |
-
-### Agents
-
-Agents are automatically available via `@agent-name` syntax in Copilot Chat:
-
-| Agent | Purpose |
-|-------|---------|
-| `@endpoint-discoverer` | Discover API endpoints from code |
-| `@auth-analyzer` | Analyze auth patterns for testing |
-| `@traffic-analyzer` | Analyze APM exports to prioritize endpoints |
-| `@collection-generator` | Generate Postman collections |
-| `@pipeline-generator` | Generate Azure DevOps pipelines |
-| `@diagnostics-agent` | Diagnose test failures |
-
-### Skills
-
-Skills are automatically loaded when relevant. They provide domain knowledge for:
-- Endpoint discovery (Java, .NET, Node.js, Python)
-- Auth patterns (OAuth, JWT, API Keys, Azure AD)
-- Dynatrace/APM analysis
-- Test tagging conventions
-- Postman collection generation
-- Test data planning
-- ADO pipeline patterns
-- Failure triage
-
-## Recommended Workflow
-
-1. **Discover endpoints**: Use `discover-endpoints` prompt or `@endpoint-discoverer`
-2. **Analyze auth**: Use `analyze-auth` prompt to understand authentication
-3. **Prioritize** (optional): Use `analyze-traffic` if you have APM data
-4. **Generate collection**: Use `generate-collection` for Postman
-5. **Generate pipeline**: Use `generate-pipeline` for ADO CI/CD
-6. **Diagnose**: Use `diagnose` when tests fail
 
 ## Output Locations
 
-All outputs go to safe directories:
+Agents never modify your application source code. All writes go to these directories only, and agents ask for confirmation before creating files.
 
-```text
-qa-agent-output/     # Reports, inventories, diagnostics
-docs/generated/      # OpenAPI drafts
-postman/             # Collections and environments
-ado/                 # Pipeline templates
+| Directory | Contents |
+|-----------|----------|
+| `qa-agent-output/` | Reports, endpoint inventories, analysis documents |
+| `postman/` | Collections and environment files |
+| `ado/` | Pipeline YAML templates |
+
+## Prerequisites
+
+- VS Code **1.102+** (check: Help > About)
+- GitHub Copilot extension with an active subscription
+- Copilot Chat enabled
+- Node.js (only needed if using `npx degit` for installation)
+
+## Settings
+
+These settings default to `true` in VS Code 1.99+. Only check them if agents or prompts aren't appearing:
+
+```json
+"github.copilot.chat.codeGeneration.useInstructionFiles": true,
+"chat.agent.enabled": true,
+"chat.useAgentSkills": true
 ```
 
-## Differences from Claude Code Version
+> Prompt files (`.prompt.md`) require no setting — they are detected automatically from `.github/prompts/`.
 
-| Feature | Claude Code | VS Code Copilot |
-|---------|-------------|-----------------|
-| Commands | `/discover-endpoints` | Prompt file invocation |
-| Agents | Auto-delegation | `@agent-name` syntax |
-| Hooks | hooks.json enforcement | Prompt-based guards |
+**How to check:** `Cmd+Shift+P` (Mac) or `Ctrl+Shift+P` (Windows/Linux), then type "Preferences: Open User Settings (JSON)".
 
-## Source
+## Troubleshooting
 
-This project was ported from the Claude Code plugin version of qa-copilot.
+| Problem | Solution |
+|---------|----------|
+| Prompts not appearing when typing `/` | Verify `.github/prompts/` is at project root. Reopen the folder in VS Code. |
+| Agents not in dropdown | Verify `chat.agent.enabled: true`. Update VS Code to 1.102+. |
+| Skills not activating | Verify `chat.useAgentSkills: true`. Check `SKILL.md` frontmatter in skill folders. |
+| Nothing works at all | Confirm `.github/` is at project root (not nested inside another folder). Close and reopen VS Code. |
+| Legacy `.chatmode.md` files | Use VS Code Quick Fix to convert to `.agent.md`. |
 
-For the original Claude Code plugin, see the [qa-agents repository](https://github.com/YOUR_USERNAME/qa-agents).
+## Contributing
+
+We welcome contributions! See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
+
+## License
+
+MIT License — see [LICENSE](LICENSE) for details.
+
+---
+
+[Code of Conduct](CODE_OF_CONDUCT.md) | [Security Policy](SECURITY.md)
