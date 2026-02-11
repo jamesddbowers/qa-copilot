@@ -5,7 +5,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![6 Agents](https://img.shields.io/badge/agents-6-blue)](#agents--prompts)
 
-# qa-copilot
+# QA Copilot
 
 **AI-powered QA automation agents for GitHub Copilot in VS Code.** Discover API endpoints, analyze auth patterns, generate Postman collections, build Azure DevOps pipelines, and diagnose test failures — all from Copilot Chat. 6 agents, 6 prompts, and 8 skills for end-to-end API integration test automation across Java, .NET, Node.js, and Python codebases.
 
